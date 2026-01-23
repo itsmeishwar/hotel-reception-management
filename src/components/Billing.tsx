@@ -21,9 +21,7 @@ import {
   fetchStaffStats 
 } from '../services/staffService';
 import type { Staff, StaffStats } from '../services/staffService';
-
 type ModalType = 'none' | 'add' | 'edit' | 'delete';
-
 const StaffPage = () => {
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [stats, setStats] = useState<StaffStats | null>(null);

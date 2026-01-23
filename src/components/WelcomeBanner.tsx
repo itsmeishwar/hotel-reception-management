@@ -3,7 +3,7 @@ import React from "react";
 const WelcomeBanner: React.FC = () => (
   <div className="bg-orange-400 rounded-lg p-6 flex justify-between items-center mb-6">
     <div>
-      <h2 className="text-white text-xl font-semibold mb-1">Welcome Back, Adrian</h2>
+      <h2 className="text-white text-xl font-semibold mb-1">Welcome Back, Ishwar</h2>
       <p className="text-white text-sm">14 New Companies Subscribed Today !!</p>
     </div>
     <div className="flex gap-2">

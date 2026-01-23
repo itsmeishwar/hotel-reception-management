@@ -36,6 +36,7 @@ import { fetchTables } from "../services/tableService";
 import type { CafeOrder, OrderItem } from "../services/cafeService";
 import type { FoodItem } from "../services/foodService";
 import type { Table } from "../services/tableService";
+import StatCard from "./StatCard";
 
 const Cafe = () => {
   const [orders, setOrders] = useState<CafeOrder[]>([]);
@@ -44,34 +45,34 @@ const Cafe = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [stats, setStats] = useState([
-    { 
-      label: "Pending Orders", 
-      value: "0", 
-      color: "bg-gradient-to-br from-yellow-500 to-orange-500", 
+    {
+      label: "Pending Orders",
+      value: "0",
+      color: "bg-gradient-to-br from-yellow-500 to-orange-500",
       icon: Clock,
       change: "+12%",
       description: "Awaiting preparation"
     },
-    { 
-      label: "Active Tables", 
-      value: "0", 
-      color: "bg-gradient-to-br from-blue-500 to-blue-600", 
+    {
+      label: "Active Tables",
+      value: "0",
+      color: "bg-gradient-to-br from-blue-500 to-blue-600",
       icon: Users,
       change: "+5%",
       description: "Currently occupied"
     },
-    { 
-      label: "Today's Revenue", 
-      value: "$0", 
-      color: "bg-gradient-to-br from-green-500 to-emerald-600", 
+    {
+      label: "Today's Revenue",
+      value: "$0",
+      color: "bg-gradient-to-br from-green-500 to-emerald-600",
       icon: DollarSign,
       change: "+24%",
       description: "Sales today"
     },
-    { 
-      label: "Avg. Prep Time", 
-      value: "15m", 
-      color: "bg-gradient-to-br from-purple-500 to-purple-600", 
+    {
+      label: "Avg. Prep Time",
+      value: "15m",
+      color: "bg-gradient-to-br from-purple-500 to-purple-600",
       icon: Timer,
       change: "-8%",
       description: "Order to serve"
@@ -138,42 +139,42 @@ const Cafe = () => {
       setFilteredOrders(orderData);
       setFoodItems(foodData.filter(f => f.isAvailable));
       setTables(tableData.filter(t => t.status !== 'cleaning'));
-      
+
       // Filter orders for kitchen view (preparing/ready)
-      const kitchenOrders = orderData.filter(order => 
+      const kitchenOrders = orderData.filter(order =>
         order.status === 'preparing' || order.status === 'ready'
       );
       setKitchenOrders(kitchenOrders);
 
       setStats([
-        { 
-          label: "Pending Orders", 
-          value: (statsData?.pendingOrders ?? 0).toString(), 
-          color: "bg-gradient-to-br from-yellow-500 to-orange-500", 
+        {
+          label: "Pending Orders",
+          value: (statsData?.pendingOrders ?? 0).toString(),
+          color: "bg-gradient-to-br from-yellow-500 to-orange-500",
           icon: Clock,
           change: "+12%",
           description: "Awaiting preparation"
         },
-        { 
-          label: "Active Tables", 
-          value: (tableData.filter(t => t.status === 'occupied')?.length ?? 0).toString(), 
-          color: "bg-gradient-to-br from-blue-500 to-blue-600", 
+        {
+          label: "Active Tables",
+          value: (tableData.filter(t => t.status === 'occupied')?.length ?? 0).toString(),
+          color: "bg-gradient-to-br from-blue-500 to-blue-600",
           icon: Users,
           change: "+5%",
           description: "Currently occupied"
         },
-        { 
-          label: "Today's Revenue", 
-          value: `$${Number(statsData?.todayRevenue ?? 0).toFixed(2)}`, 
-          color: "bg-gradient-to-br from-green-500 to-emerald-600", 
+        {
+          label: "Today's Revenue",
+          value: `$${Number(statsData?.todayRevenue ?? 0).toFixed(2)}`,
+          color: "bg-gradient-to-br from-green-500 to-emerald-600",
           icon: DollarSign,
           change: "+24%",
           description: "Sales today"
         },
-        { 
-          label: "Avg. Prep Time", 
-          value: "15m", 
-          color: "bg-gradient-to-br from-purple-500 to-purple-600", 
+        {
+          label: "Avg. Prep Time",
+          value: "15m",
+          color: "bg-gradient-to-br from-purple-500 to-purple-600",
           icon: Timer,
           change: "-8%",
           description: "Order to serve"
@@ -189,7 +190,7 @@ const Cafe = () => {
 
   useEffect(() => {
     loadData();
-    
+
     // Auto-refresh every 30 seconds for real-time updates
     const interval = setInterval(() => {
       loadData();
@@ -244,14 +245,14 @@ const Cafe = () => {
   const addQuickItem = (itemId: number) => {
     const quickItem = quickMenuItems.find(item => item.id === itemId);
     const foodItem = foodItems.find(f => f.name === quickItem?.name);
-    
+
     if (foodItem) {
       setFormData({
         ...formData,
-        items: [...formData.items, { 
-          foodItemId: foodItem.id, 
-          quantity: 1, 
-          notes: '' 
+        items: [...formData.items, {
+          foodItemId: foodItem.id,
+          quantity: 1,
+          notes: ''
         }]
       });
     }
@@ -353,12 +354,12 @@ const Cafe = () => {
 
       closeModal();
       loadData();
-      
+
       // Add notification
       setNotifications(prev => [{
         id: Date.now(),
         type: 'success',
-        message: `Order #${formData.orderType.slice(0,1).toUpperCase()}${Date.now().toString().slice(-4)} created`,
+        message: `Order #${formData.orderType.slice(0, 1).toUpperCase()}${Date.now().toString().slice(-4)} created`,
         time: 'just now'
       }, ...prev.slice(0, 4)]);
     } catch (err) {
@@ -522,26 +523,15 @@ const Cafe = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat, idx) => (
-          <div
+          <StatCard
             key={idx}
-            className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className={`w-14 h-14 ${stat.color} rounded-2xl flex items-center justify-center shadow-sm`}>
-                <stat.icon size={24} className="text-white" />
-              </div>
-              <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                stat.change.startsWith('+') ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
-              }`}>
-                {stat.change}
-              </span>
-            </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
-            <div className="text-sm text-gray-600">{stat.label}</div>
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="text-xs text-gray-500">{stat.description}</div>
-            </div>
-          </div>
+            label={stat.label}
+            value={stat.value}
+            icon={stat.icon}
+            color={stat.color}
+            change={stat.change}
+            description={stat.description}
+          />
         ))}
       </div>
 
@@ -556,11 +546,10 @@ const Cafe = () => {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    activeTab === tab
+                  className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === tab
                       ? "bg-gradient-to-r from-[#FF8C42] to-[#FF6B35] text-white"
                       : "text-gray-600 hover:bg-gray-100"
-                  }`}
+                    }`}
                 >
                   {tab === "orders" && "All Orders"}
                   {tab === "kitchen" && "Kitchen View"}
@@ -583,7 +572,7 @@ const Cafe = () => {
                     className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF8C42]/30 focus:border-[#FF8C42] bg-white shadow-sm"
                   />
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Filter size={18} className="text-gray-400" />
                   <select
@@ -631,13 +620,12 @@ const Cafe = () => {
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-3 rounded-xl border ${
-                    notification.type === 'warning' 
-                      ? 'bg-yellow-50 border-yellow-200' 
+                  className={`p-3 rounded-xl border ${notification.type === 'warning'
+                      ? 'bg-yellow-50 border-yellow-200'
                       : notification.type === 'success'
-                      ? 'bg-green-50 border-green-200'
-                      : 'bg-blue-50 border-blue-200'
-                  }`}
+                        ? 'bg-green-50 border-green-200'
+                        : 'bg-blue-50 border-blue-200'
+                    }`}
                 >
                   <div className="flex justify-between items-start">
                     <p className="text-sm font-medium text-gray-900">{notification.message}</p>
@@ -671,7 +659,7 @@ const Cafe = () => {
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Clock size={16} />
-                <span>Updated: {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                <span>Updated: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
             </div>
           </div>
@@ -731,7 +719,7 @@ const Cafe = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {order.customerName || order.roomNumber 
+                          {order.customerName || order.roomNumber
                             ? `${order.customerName || 'Guest'}${order.roomNumber ? ` (Room ${order.roomNumber})` : ''}`
                             : 'Walk-in Customer'
                           }
@@ -766,11 +754,10 @@ const Cafe = () => {
                         <div className="text-lg font-bold bg-gradient-to-r from-[#FF8C42] to-[#FF6B35] bg-clip-text text-transparent">
                           ${Number(order.total || 0).toFixed(2)}
                         </div>
-                        <div className={`text-xs ${
-                          order.paymentStatus === 'paid' 
-                            ? 'text-green-600' 
+                        <div className={`text-xs ${order.paymentStatus === 'paid'
+                            ? 'text-green-600'
                             : 'text-red-600'
-                        }`}>
+                          }`}>
                           {order.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
                         </div>
                       </td>
@@ -873,14 +860,13 @@ const Cafe = () => {
                       <p className="text-sm text-gray-600">{order.tableNumber || 'Takeaway'}</p>
                     </div>
                     <button
-                      onClick={() => handleStatusChange(order.id, 
+                      onClick={() => handleStatusChange(order.id,
                         order.status === 'preparing' ? 'ready' : 'served'
                       )}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-                        order.status === 'preparing'
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium ${order.status === 'preparing'
                           ? 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 hover:from-blue-100 hover:to-blue-200'
                           : 'bg-gradient-to-r from-green-50 to-green-100 text-green-700 hover:from-green-100 hover:to-green-200'
-                      }`}
+                        }`}
                     >
                       {order.status === 'preparing' ? 'Mark Ready' : 'Mark Served'}
                     </button>
@@ -901,11 +887,10 @@ const Cafe = () => {
                   </div>
                   <div className="flex items-center justify-between text-sm text-gray-500 pt-3 border-t border-gray-100">
                     <span>Ordered: {order.createdAt ? formatTime(order.createdAt) : 'N/A'}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                      order.status === 'preparing' 
-                        ? 'bg-yellow-100 text-yellow-700' 
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${order.status === 'preparing'
+                        ? 'bg-yellow-100 text-yellow-700'
                         : 'bg-green-100 text-green-700'
-                    }`}>
+                      }`}>
                       {order.status === 'preparing' ? 'Preparing' : 'Ready'}
                     </span>
                   </div>
@@ -924,21 +909,19 @@ const Cafe = () => {
               {tables.map((table) => (
                 <div
                   key={table.id}
-                  className={`p-4 rounded-2xl border-2 ${
-                    table.status === 'occupied'
+                  className={`p-4 rounded-2xl border-2 ${table.status === 'occupied'
                       ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200'
                       : table.status === 'reserved'
-                      ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200'
-                      : 'bg-gradient-to-br from-green-50 to-green-100 border-green-200'
-                  }`}
+                        ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200'
+                        : 'bg-gradient-to-br from-green-50 to-green-100 border-green-200'
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-lg font-bold text-gray-900">{table.tableNumber}</div>
-                    <div className={`w-3 h-3 rounded-full ${
-                      table.status === 'occupied' ? 'bg-orange-500' :
-                      table.status === 'reserved' ? 'bg-blue-500' :
-                      'bg-green-500'
-                    }`} />
+                    <div className={`w-3 h-3 rounded-full ${table.status === 'occupied' ? 'bg-orange-500' :
+                        table.status === 'reserved' ? 'bg-blue-500' :
+                          'bg-green-500'
+                      }`} />
                   </div>
                   <div className="text-sm text-gray-600 mb-1">{table.section}</div>
                   <div className="text-sm font-medium text-gray-700 capitalize">{table.status}</div>
@@ -1065,7 +1048,7 @@ const Cafe = () => {
                     <option value="room_service">🏨 Room Service</option>
                   </select>
                 </div>
-                
+
                 {formData.orderType === 'dine_in' && (
                   <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-2xl">
                     <h4 className="text-lg font-semibold text-green-900 mb-4 flex items-center gap-2">
@@ -1135,11 +1118,10 @@ const Cafe = () => {
                       key={priority}
                       type="button"
                       onClick={() => setFormData({ ...formData, priority })}
-                      className={`flex-1 px-4 py-3 rounded-xl text-sm font-medium text-center capitalize transition-all ${
-                        formData.priority === priority
+                      className={`flex-1 px-4 py-3 rounded-xl text-sm font-medium text-center capitalize transition-all ${formData.priority === priority
                           ? 'bg-gradient-to-r from-[#FF8C42] to-[#FF6B35] text-white'
                           : 'bg-white text-gray-700 hover:bg-white/80'
-                      }`}
+                        }`}
                     >
                       {priority === 'normal' && '⏱️ Normal'}
                       {priority === 'urgent' && '🚨 Urgent'}
@@ -1321,8 +1303,10 @@ const Cafe = () => {
                   { label: "Table/Room", value: viewingOrder.tableNumber || viewingOrder.roomNumber || 'N/A' },
                   { label: "Priority", value: viewingOrder.priority || 'normal' },
                   { label: "Status", value: viewingOrder.status || 'pending', badge: getStatusColor(viewingOrder.status) },
-                  { label: "Payment", value: viewingOrder.paymentStatus || 'unpaid', 
-                    color: viewingOrder.paymentStatus === 'paid' ? 'text-green-600' : 'text-red-600' },
+                  {
+                    label: "Payment", value: viewingOrder.paymentStatus || 'unpaid',
+                    color: viewingOrder.paymentStatus === 'paid' ? 'text-green-600' : 'text-red-600'
+                  },
                 ].map((item, idx) => (
                   <div key={idx} className="space-y-2">
                     <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">

@@ -20,12 +20,8 @@ import {
   ChefHat,
   Timer,
   Shield,
-  
   AlertCircle,
-  
   BookOpen,
-  
-  
   ShoppingBag,
 } from "lucide-react";
 import { useState, useEffect } from "react";

@@ -83,7 +83,7 @@ const Cafe = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isQuickMenuOpen, setIsQuickMenuOpen] = useState(false);
-  const [] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [viewingOrder, setViewingOrder] = useState<CafeOrder | null>(null);
   const [payingOrder, setPayingOrder] = useState<CafeOrder | null>(null);
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);

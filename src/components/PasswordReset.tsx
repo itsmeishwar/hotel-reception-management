@@ -69,7 +69,6 @@ const PasswordReset: React.FC = () => {
               />
             </div>
           </div>
-
           <button
             type="submit"
             disabled={isLoading}
@@ -78,7 +77,6 @@ const PasswordReset: React.FC = () => {
             {isLoading ? 'Sending...' : 'Send Reset Link'}
           </button>
         </form>
-
         <div className="mt-6 text-center">
           <a href="/" className="text-sm text-gray-600 hover:text-orange-600 flex items-center gap-2 justify-center">
             <ArrowLeft size={16} />

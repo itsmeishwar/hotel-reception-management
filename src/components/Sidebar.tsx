@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import logo from '../assets/Ishwar.svg';
+import logo from '../assets/ishwar.svg';
 import {
   LayoutDashboard,
   CalendarDays,

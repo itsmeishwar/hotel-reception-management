@@ -27,7 +27,7 @@ function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/bookings" element={<Booking />} />
                 <Route path="/rooms" element={<Rooms />} />
-                <Route path="/payments" element={<require('./components/Payments').default />} />
+                <Route path="/payments" element={<Payments />} />
                 <Route path="/guests" element={<Guests />} />
                 <Route path="/cafe" element={<Cafe />} />
                 <Route path="/food-menu" element={<FoodMenu />} />

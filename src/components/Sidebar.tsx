@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import logo from '../assets/ishwar.svg';
+import logo from '../assets/Ishwar.svg';
 import {
   LayoutDashboard,
   CalendarDays,
@@ -26,6 +26,7 @@ const Sidebar = () => {
     { path: "/", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/bookings", icon: CalendarDays, label: "Bookings" },
     { path: "/rooms", icon: Hotel, label: "Rooms" },
+    { path: "/payments", icon: Receipt, label: "Payments" },
     { path: "/guests", icon: Users, label: "Guests" },
     { path: "/cafe", icon: Coffee, label: "Cafe & Orders" },
     { path: "/food-menu", icon: UtensilsCrossed, label: "Food Menu" },

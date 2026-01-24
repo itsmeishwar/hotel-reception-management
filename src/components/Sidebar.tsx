@@ -1,5 +1,4 @@
 import { Link, useLocation } from 'react-router-dom';
-import logo from '../assets/ishwar.svg';
 import {
   LayoutDashboard,
   CalendarDays,
@@ -41,7 +40,9 @@ const Sidebar = () => {
   return (
     <aside className="w-64 bg-white h-screen border-r border-gray-200 flex flex-col flex-shrink-0 z-20">
       <div className="px-6 py-6 border-b border-gray-200 flex items-center justify-center">
-        <img src={logo} alt="Ishwar Hotel & Resort" className="h-16 w-auto object-contain" />
+        <div className="h-16 flex items-center justify-center text-xl font-bold text-orange-600">
+          Ishwar
+        </div>
       </div>
 
       <nav className="flex-1 overflow-y-auto py-4 px-4">

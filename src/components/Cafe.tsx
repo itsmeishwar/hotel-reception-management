@@ -1064,7 +1064,7 @@ const Cafe = () => {
                       <option value="">Select Table</option>
                       {tables.map((table) => (
                         <option key={table.id} value={table.id}>
-                          Table {table.tableNumber} - {table.section} ({table.capacity} seats)
+                          Table {table.tableNumber} ({table.capacity} seats)
                         </option>
                       ))}
                     </select>

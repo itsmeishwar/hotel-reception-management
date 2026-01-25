@@ -923,7 +923,7 @@ const Cafe = () => {
                           'bg-green-500'
                       }`} />
                   </div>
-                  <div className="text-sm text-gray-600 mb-1">{table.section}</div>
+                  <div className="text-sm text-gray-600 mb-1">Capacity: {table.capacity}</div>
                   <div className="text-sm font-medium text-gray-700 capitalize">{table.status}</div>
                   {table.status === 'occupied' && (
                     <div className="mt-2 text-xs text-gray-500">

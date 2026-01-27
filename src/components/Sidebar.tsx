@@ -24,7 +24,7 @@ const Sidebar = () => {
 
   const menuItems = [
     { path: "/", icon: LayoutDashboard, label: "Dashboard" },
-    { path: "/front-desk", icon: LayoutDashboard, label: "Front Desk" },
+    { path: "/front-desk", icon: Coffee, label: "Front Desk" },
     { path: "/reservations", icon: CalendarDays, label: "Reservations" },
     { path: "/guests", icon: Users, label: "Guests" },
     { path: "/payments", icon: Receipt, label: "Payments" },
@@ -36,10 +36,8 @@ const Sidebar = () => {
     { path: "/revenue", icon: FileBarChart, label: "Revenue" },
     { path: "/inventory", icon: Table, label: "Inventory" },
     { path: "/support", icon: Users, label: "Support & Training" },
-    { path: "/manage-role", icon: ShieldCheck, label: "Manage Role" },
     { path: "/roles", icon: ShieldCheck, label: "Roles & Access" },
     { path: "/settings", icon: Settings, label: "Settings" },
-    { path: "/logout", icon: LayoutDashboard, label: "Logout" },
   ];
 
   return (

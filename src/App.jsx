@@ -9,6 +9,7 @@ import Cafe from './components/Cafe';
 import FoodMenu from './components/FoodMenu';
 import Tables from './components/Tables';
 import Billing from './components/Billing';
+import Payments from './components/Payments';
 import Staff from './components/Staff';
 import RolesAccess from './components/RolesAccess';
 import Reports from './components/Reports';

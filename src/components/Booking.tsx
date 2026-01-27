@@ -898,65 +898,217 @@ const Bookings = () => {
         </div>
       )}
 
-      {/* View Details Modal - Enhanced */}
+      {/* View Details Modal - Detailed Booking View */}
       {isViewModalOpen && viewingBooking && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
-            <div className="bg-gradient-to-r from-[#FF8C42] to-[#FF6B35] px-8 py-6 rounded-t-2xl">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-xl font-bold text-white">Booking Details</h3>
-                  <p className="text-white/80 text-sm mt-1">{viewingBooking.id}</p>
-                </div>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-5xl w-full shadow-2xl my-8">
+            {/* Header */}
+            <div className="px-8 py-6 border-b border-gray-200 flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Booking #{viewingBooking.id}</h2>
+                <p className="text-gray-500 text-sm mt-1">
+                  {new Date(viewingBooking.checkIn).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize ${getStatusColor(viewingBooking.status)}`}>
+                  {viewingBooking.status}
+                </span>
                 <button
                   onClick={() => setIsViewModalOpen(false)}
-                  className="text-white hover:text-white/80"
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <X size={20} />
+                  <X size={20} className="text-gray-500" />
                 </button>
               </div>
             </div>
-            
-            <div className="p-8">
-              <div className="grid grid-cols-2 gap-6">
-                {[
-                  { label: "Guest", value: viewingBooking.guestName },
-                  { label: "Room", value: typeof viewingBooking.room === 'object' ? viewingBooking.room.id : viewingBooking.room },
-                  { label: "Nights", value: viewingBooking.nights },
-                  { label: "Check In", value: `${viewingBooking.checkIn} ${viewingBooking.checkInTime ? `at ${viewingBooking.checkInTime}` : ''}` },
-                  { label: "Check Out", value: `${viewingBooking.checkOut} ${viewingBooking.checkOutTime ? `at ${viewingBooking.checkOutTime}` : ''}` },
-                  { label: "Amount", value: viewingBooking.amount, highlight: true },
-                  { label: "Status", value: viewingBooking.status, badge: getStatusColor(viewingBooking.status) },
-                  { label: "Payment", value: viewingBooking.payment, badge: getPaymentColor(viewingBooking.payment) },
-                ].map((item, idx) => (
-                  <div key={idx} className="space-y-2">
-                    <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                      {item.label}
-                    </div>
-                    {item.badge ? (
-                      <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-medium ${item.badge}`}>
-                        {item.value}
-                      </span>
-                    ) : (
-                      <div className={`text-sm font-semibold ${item.highlight ? 'text-[#FF8C42] text-lg' : 'text-gray-900'}`}>
-                        {item.value}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-8 pt-8 border-t border-gray-200">
-                <button
-                  onClick={() => {
-                    setIsViewModalOpen(false);
-                    openEditModal(viewingBooking);
-                  }}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 rounded-xl text-sm font-semibold hover:shadow-md transition-all flex items-center justify-center gap-2"
-                >
-                  <Edit size={16} />
-                  Edit Booking
+
+            {/* Tabs */}
+            <div className="px-8 py-4 border-b border-gray-200 flex gap-6">
+              {['General', 'Chats', 'Activity log', 'Changes'].map((tab) => (
+                <button key={tab} className={`text-sm font-medium pb-2 border-b-2 transition-colors ${
+                  tab === 'General' 
+                    ? 'text-blue-600 border-blue-600' 
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}>
+                  {tab}
                 </button>
+              ))}
+            </div>
+
+            {/* Content */}
+            <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Column - Origin & Guest */}
+              <div className="space-y-6">
+                {/* Origin */}
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">Origin</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Customer</p>
+                      <p className="text-sm font-medium text-gray-900">{viewingBooking.guestName}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Source</p>
+                      <p className="text-sm font-medium text-gray-900">Online</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Company</p>
+                      <p className="text-sm font-medium text-gray-900">-----</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Guest */}
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">Guest</h3>
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                      {viewingBooking.guestName.charAt(0)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">{viewingBooking.guestName}</p>
+                      <p className="text-xs text-gray-500">{viewingBooking.guestId}</p>
+                    </div>
+                    <button className="p-1 hover:bg-white rounded-lg transition-colors">
+                      <Plus size={16} className="text-gray-400" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Middle Column - Details */}
+              <div className="space-y-6">
+                {/* Details */}
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">Details</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                      <p className="text-xs text-gray-500">Check-in</p>
+                      <p className="text-sm font-medium text-gray-900">{viewingBooking.checkIn}</p>
+                    </div>
+                    <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                      <p className="text-xs text-gray-500">Check-out</p>
+                      <p className="text-sm font-medium text-gray-900">{viewingBooking.checkOut}</p>
+                    </div>
+                    <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                      <p className="text-xs text-gray-500">Nights</p>
+                      <p className="text-sm font-medium text-gray-900">{viewingBooking.nights.toString().padStart(2, '0')}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Info */}
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Payment info</h3>
+                    <button className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Plus size={16} className="text-gray-400" />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-center h-32 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-2">
+                        💳
+                      </div>
+                      <p className="text-xs text-gray-500">Card Payment</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column - Balance & Comments */}
+              <div className="space-y-6">
+                {/* Balance */}
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">Balance</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                      <p className="text-xs text-gray-500">Amount</p>
+                      <p className="text-sm font-medium text-gray-900">${parseFloat(viewingBooking.amount).toFixed(2)}</p>
+                    </div>
+                    <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                      <p className="text-xs text-gray-500">Paid</p>
+                      <p className="text-sm font-medium text-gray-900">$200</p>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs text-gray-500">Balance</p>
+                      <p className="text-sm font-medium text-gray-900">$40</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Comments and Notes */}
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Comments and notes</h3>
+                    <button className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+                      <Plus size={16} className="text-gray-400" />
+                    </button>
+                  </div>
+                  <textarea
+                    placeholder="Add notes about this booking..."
+                    className="w-full h-24 p-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Save Button */}
+            <div className="px-8 py-6 border-t border-gray-200 flex gap-3 justify-center">
+              <button
+                onClick={() => {
+                  openEditModal(viewingBooking);
+                  setIsViewModalOpen(false);
+                }}
+                className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg text-sm font-semibold hover:shadow-lg transition-all"
+              >
+                Save changes
+              </button>
+            </div>
+
+            {/* Accommodations Table */}
+            <div className="px-8 py-8 border-t border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900 mb-6">Accommodations</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Adult</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Children</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Room type</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Room</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Board</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Room rate</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Cancellation policy</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Price</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-700">Tax</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[1, 2].map((idx) => (
+                      <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="px-4 py-4 text-gray-900">{viewingBooking.checkIn}</td>
+                        <td className="px-4 py-4 text-gray-900">2</td>
+                        <td className="px-4 py-4 text-gray-900">1</td>
+                        <td className="px-4 py-4 text-gray-900">Double room</td>
+                        <td className="px-4 py-4 text-gray-900">301</td>
+                        <td className="px-4 py-4 text-gray-900">No meals</td>
+                        <td className="px-4 py-4 text-gray-900">Filly Hotel</td>
+                        <td className="px-4 py-4 text-gray-900">Filly Hotel</td>
+                        <td className="px-4 py-4">
+                          <span className="text-gray-900 font-medium">$240</span>
+                          <button className="text-blue-600 hover:text-blue-700 ml-1">↗</button>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className="text-gray-900 font-medium">$40</span>
+                          <button className="text-blue-600 hover:text-blue-700 ml-1">↗</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

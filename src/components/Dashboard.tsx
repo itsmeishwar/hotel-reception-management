@@ -1,1071 +1,393 @@
 import { useState, useEffect } from 'react';
-import { 
-  BedDouble, 
-  Users, 
-  DollarSign, 
-  CalendarCheck, 
-  CalendarX, 
-  TrendingUp,
-  CheckCircle,
-  Sparkles,
-  ArrowUpRight,
-  X,
-  Plus,
-  Edit2,
-  Trash2,
-  UserPlus,
-  LogIn,
-  LogOut,
+import {
+  ChevronLeft,
+  ChevronRight,
   Search,
-  Eye,
-  Loader
+  Settings,
+  Bell,
+  BarChart3,
+  TrendingUp,
+  Users,
+  Clock,
+  LogOut,
+  Star,
 } from 'lucide-react';
-import { 
-  fetchBookings, 
-  createBooking, 
-  updateBooking, 
-  deleteBooking, 
-  updateBookingStatus, 
-  fetchBookingStats 
-} from '../services/bookingService';
-import { fetchBillingStats } from '../services/billingService';
-import type { Booking, BookingStats } from '../services/bookingService';
 
-// Types for Dashboard
-type ModalType = 'none' | 'newBooking' | 'checkIn' | 'checkOut' | 'addGuest' | 'viewBooking' | 'editBooking';
 
 const Dashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [activeModal, setActiveModal] = useState<ModalType>('none');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [loading, setLoading] = useState(true);
-  
-  // Data State
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [bookingStats, setBookingStats] = useState<BookingStats | null>(null);
-  const [revenueStats, setRevenueStats] = useState<{ totalRevenue: number } | null>(null);
-
-  const [newBookingForm, setNewBookingForm] = useState({
-    guestName: '',
-    phone: '',
-    email: '',
-    room: '', 
-    checkIn: '',
-    checkOut: '',
-    amount: '',
-  });
-
-  const [newGuestForm, setNewGuestForm] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    idType: 'Aadhar',
-    idNumber: '',
-    address: '',
-  });
-
-  // Available rooms for booking (Mock)
-  const availableRooms = ['101', '102', '110', '203', '205', '301', '308', '401', '405'];
+  const [currentMonth, setCurrentMonth] = useState(new Date(2023, 7)); // Aug 2023
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
 
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      const [bookingsData, bStats, rStats] = await Promise.all([
-        fetchBookings(),
-        fetchBookingStats(),
-        fetchBillingStats()
-      ]);
-      setBookings(bookingsData);
-      setBookingStats(bStats);
-      setRevenueStats({ totalRevenue: rStats.totalRevenue });
-    } catch (error) {
-      console.error("Failed to load dashboard data", error);
-    } finally {
-      setLoading(false);
-    }
+  const getDaysInMonth = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   };
 
-  // CRUD Operations
-  const handleCreateBooking = async () => {
-    if (!newBookingForm.guestName || !newBookingForm.room || !newBookingForm.checkIn || !newBookingForm.checkOut) {
-      alert('Please fill all required fields');
-      return;
-    }
-    
-    try {
-      const newBooking: Booking = {
-        id: '', // Service generates ID
-        guestId: `G${Math.floor(Math.random() * 1000)}`, // Mock guest ID generation
-        guestName: newBookingForm.guestName,
-        roomId: newBookingForm.room,
-        room: `Room ${newBookingForm.room}`,
-        checkIn: newBookingForm.checkIn,
-        checkOut: newBookingForm.checkOut,
-        nights: Math.ceil((new Date(newBookingForm.checkOut).getTime() - new Date(newBookingForm.checkIn).getTime()) / (1000 * 3600 * 24)),
-        status: 'pending',
-        amount: newBookingForm.amount || '0',
-        payment: 'pending'
-      };
-      
-      await createBooking(newBooking);
-      await loadDashboardData();
-      setNewBookingForm({ guestName: '', phone: '', email: '', room: '', checkIn: '', checkOut: '', amount: '' });
-      setActiveModal('none');
-    } catch (error) {
-      console.error("Error creating booking:", error);
-      alert("Failed to create booking");
-    }
+  const getFirstDayOfMonth = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
   };
 
-  const handleUpdateBooking = async () => {
-    if (!selectedBooking) return;
-    
-    try {
-      await updateBooking(selectedBooking.id, selectedBooking);
-      await loadDashboardData();
-      setSelectedBooking(null);
-      setActiveModal('none');
-    } catch (error) {
-      console.error("Error updating booking:", error);
-      alert("Failed to update booking");
-    }
-  };
+  const daysInMonth = getDaysInMonth(currentMonth);
+  const firstDay = getFirstDayOfMonth(currentMonth);
+  const calendarDays = [];
 
-  const handleDeleteBooking = async (id: string) => {
-    if (confirm('Are you sure you want to delete this booking?')) {
-      try {
-        await deleteBooking(id);
-        await loadDashboardData();
-      } catch (error) {
-         console.error("Error deleting booking:", error);
-         alert("Failed to delete booking");
-      }
-    }
-  };
-
-  const handleConfirmBooking = async (id: string) => {
-    try {
-      await updateBookingStatus(id, 'confirmed');
-      await loadDashboardData();
-    } catch (error) {
-      console.error("Error confirming booking:", error);
-    }
-  };
-
-  const handleCancelBooking = async (id: string) => {
-    try {
-      await updateBookingStatus(id, 'cancelled');
-      await loadDashboardData();
-    } catch (error) {
-       console.error("Error cancelling booking:", error);
-    }
-  };
-
-  const handleCheckIn = async (id: string) => {
-    try {
-      await updateBookingStatus(id, 'checked-in');
-      alert(`Guest for booking ${id} has been checked in successfully!`);
-      await loadDashboardData();
-      setActiveModal('none');
-    } catch (error) {
-      console.error("Error checking in:", error);
-    }
-  };
-
-  const handleCheckOut = async (id: string) => {
-    try {
-      await updateBookingStatus(id, 'checked-out');
-      alert(`Guest for booking ${id} has been checked out successfully!`);
-      await loadDashboardData();
-      setActiveModal('none');
-    } catch (error) {
-      console.error("Error checking out:", error);
-    }
-  };
-
-  const handleAddGuest = () => {
-    if (!newGuestForm.name || !newGuestForm.phone) {
-      alert('Please fill all required fields');
-      return;
-    }
-    // In a real app, this would call guestService.createGuest
-    alert(`Guest ${newGuestForm.name} has been added successfully!`);
-    setNewGuestForm({ name: '', phone: '', email: '', idType: 'Aadhar', idNumber: '', address: '' });
-    setActiveModal('none');
-  };
-
-  // Filter bookings for check-in/check-out
-  const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
-  const checkedInBookings = bookings.filter(b => b.status === 'checked-in');
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  };
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      second: '2-digit'
-    });
-  };
-
-  // Derived Statistics from real data
-  const roomStats = {
-    total: 50, // Mock total
-    occupied: bookings.filter(b => b.status === 'checked-in').length,
-    available: 50 - bookings.filter(b => b.status === 'checked-in').length,
-    cleaning: 3, // Mock
-    occupancyRate: Math.round((bookings.filter(b => b.status === 'checked-in').length / 50) * 100)
-  };
-
-  // Today's activity (Mock/Derived logic)
-  const todayActivity = {
-    checkIns: bookings.filter(b => b.status === 'checked-in').length,
-    checkOuts: bookings.filter(b => b.status === 'checked-out').length,
-    newBookings: bookingStats?.totalBookings || 0,
-    cancellations: bookings.filter(b => b.status === 'cancelled').length
-  };
-
-  // Recent bookings display list
-  const recentBookingsList = bookings;
-
-  // Today's check-ins (Mock data for now, ideally filter from bookings where checkIn date is today)
-  // For demo, we just show pending/confirmed bookings as "Check-ins"
-  const todayCheckIns = bookings.filter(b => b.status === 'confirmed' || b.status === 'checked-in').slice(0, 4);
-  const todayCheckOuts = bookings.filter(b => b.status === 'checked-out' || (b.status === 'checked-in' && b.checkOut === new Date().toISOString().split('T')[0])).slice(0, 3);
-
-  const getStatusColor = (status: Booking['status']) => {
-    switch (status) {
-      case 'confirmed': return 'bg-green-100 text-green-700';
-      case 'pending': return 'bg-yellow-100 text-yellow-700';
-      case 'cancelled': return 'bg-red-100 text-red-700';
-      case 'checked-in': return 'bg-blue-100 text-blue-700';
-      case 'checked-out': return 'bg-gray-100 text-gray-700';
-      default: return 'bg-gray-100 text-gray-600';
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <Loader size={32} className="text-[#FF8C42] animate-spin" />
-      </div>
-    );
+  for (let i = 0; i < firstDay; i++) {
+    calendarDays.push(null);
+  }
+  for (let i = 1; i <= daysInMonth; i++) {
+    calendarDays.push(i);
   }
 
+  const prevMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
+  };
+
+  const nextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
+  };
+
+  const StatCard = ({ title, value, icon: Icon, bgColor, textColor, subtext, badge }: any) => (
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex-1">
+          <p className="text-gray-600 text-sm font-medium mb-1">{title}</p>
+          <p className="text-3xl font-bold text-gray-900">{value}</p>
+        </div>
+        <div className={`p-3 rounded-xl ${bgColor}`}>
+          <Icon size={24} className={textColor} />
+        </div>
+      </div>
+      {badge && (
+        <span className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${badge.bgColor} ${badge.textColor}`}>
+          {badge.icon && <badge.icon size={12} />}
+          {badge.label}
+        </span>
+      )}
+    </div>
+  );
+
+  const ReviewCard = ({ name, rating, text, image }: any) => (
+    <div className="flex gap-3 items-start">
+      <div className="w-8 h-8 bg-gray-300 rounded-full flex-shrink-0" />
+      <div className="flex-1">
+        <div className="flex items-center gap-2 mb-1">
+          <p className="text-sm font-semibold text-gray-900">{name}</p>
+          <div className="flex">
+            {[...Array(rating)].map((_, i) => (
+              <Star key={i} size={12} className="fill-yellow-400 text-yellow-400" />
+            ))}
+          </div>
+        </div>
+        <p className="text-xs text-gray-600">{text}</p>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="p-6 bg-gray-50 min-h-full overflow-y-auto">
-      {/* Welcome Banner */}
-      <div className="bg-linear-to-br from-[#FF8C42] to-[#FF6B35] rounded-2xl p-6 mb-6 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-        <div className="absolute bottom-0 left-1/2 w-32 h-32 bg-white/5 rounded-full translate-y-1/2"></div>
-        <div className="relative z-10">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-white/80 text-sm mb-1">{formatDate(currentTime)}</p>
-              <h2 className="text-2xl font-bold mb-2">Good {currentTime.getHours() < 12 ? 'Morning' : currentTime.getHours() < 17 ? 'Afternoon' : 'Evening'}! 👋</h2>
-              <p className="text-white/90">Here's what's happening at Dreams Hotel today</p>
+    <div className="bg-gray-50 min-h-screen overflow-y-auto">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+              <Search size={18} className="text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search"
+                className="bg-transparent outline-none text-sm placeholder-gray-400 w-32"
+              />
             </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold">{formatTime(currentTime)}</div>
-              <div className="flex items-center gap-2 mt-2 bg-white/20 rounded-lg px-3 py-1.5">
-                <Sparkles size={16} />
-                <span className="text-sm font-medium">{roomStats.occupancyRate}% Occupancy</span>
-              </div>
-            </div>
+            <span className="text-sm text-gray-600">Dashboard</span>
           </div>
-        </div>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {/* Available Rooms */}
-        <div className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-gray-500 text-sm mb-1">Available Rooms</p>
-              <p className="text-3xl font-bold text-gray-900">{roomStats.available}</p>
-              <p className="text-xs text-gray-400 mt-1">of {roomStats.total} total rooms</p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-xl">
-              <BedDouble size={24} className="text-green-600" />
-            </div>
-          </div>
-          <div className="mt-4 flex gap-2">
-            <span className="text-xs px-2 py-1 bg-green-50 text-green-600 rounded-full">{roomStats.available} Available</span>
-            <span className="text-xs px-2 py-1 bg-orange-50 text-orange-600 rounded-full">{roomStats.cleaning} Cleaning</span>
-          </div>
-        </div>
-
-        {/* Occupied Rooms */}
-        <div className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-gray-500 text-sm mb-1">Occupied Rooms</p>
-              <p className="text-3xl font-bold text-gray-900">{roomStats.occupied}</p>
-              <p className="text-xs text-gray-400 mt-1">{roomStats.occupancyRate}% occupancy rate</p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-xl">
-              <Users size={24} className="text-blue-600" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="w-full bg-gray-100 rounded-full h-2">
-              <div 
-                className="bg-linear-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all"
-                style={{ width: `${roomStats.occupancyRate}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Today's Check-ins */}
-        <div className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-gray-500 text-sm mb-1">Today's Check-ins</p>
-              <p className="text-3xl font-bold text-gray-900">{todayActivity.checkIns}</p>
-              <p className="text-xs text-gray-400 mt-1">{todayActivity.checkOuts} check-outs</p>
-            </div>
-            <div className="p-3 bg-purple-100 rounded-xl">
-              <CalendarCheck size={24} className="text-purple-600" />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center gap-2">
-            <ArrowUpRight size={14} className="text-green-500" />
-            <span className="text-xs text-green-600 font-medium">+{todayActivity.newBookings} new bookings</span>
-          </div>
-        </div>
-
-        {/* Today's Revenue */}
-        <div className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-gray-500 text-sm mb-1">Today's Revenue</p>
-              <p className="text-3xl font-bold text-gray-900">₹{(revenueStats?.totalRevenue || 0).toLocaleString()}</p>
-              <p className="text-xs text-gray-400 mt-1">Growth: +15%</p>
-            </div>
-            <div className="p-3 bg-orange-100 rounded-xl">
-              <DollarSign size={24} className="text-orange-600" />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center gap-2">
-            <TrendingUp size={14} className="text-green-500" />
-            <span className="text-xs text-green-600 font-medium">+15.5% vs last month</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Room Status Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
-        <div className="lg:col-span-3 bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Room Status Overview</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-green-50 rounded-xl">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                <CheckCircle size={24} className="text-white" />
-              </div>
-              <p className="text-2xl font-bold text-green-700">{roomStats.available}</p>
-              <p className="text-sm text-green-600">Available</p>
-            </div>
-            <div className="text-center p-4 bg-blue-50 rounded-xl">
-              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                <Users size={24} className="text-white" />
-              </div>
-              <p className="text-2xl font-bold text-blue-700">{roomStats.occupied}</p>
-              <p className="text-sm text-blue-600">Occupied</p>
-            </div>
-            <div className="text-center p-4 bg-orange-50 rounded-xl">
-              <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                <Sparkles size={24} className="text-white" />
-              </div>
-              <p className="text-2xl font-bold text-orange-700">{roomStats.cleaning}</p>
-              <p className="text-sm text-orange-600">Cleaning</p>
-            </div>
-            <div className="text-center p-4 bg-gray-50 rounded-xl">
-              <div className="w-12 h-12 bg-gray-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                <BedDouble size={24} className="text-white" />
-              </div>
-              <p className="text-2xl font-bold text-gray-700">{roomStats.total}</p>
-              <p className="text-sm text-gray-600">Total Rooms</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-          <div className="space-y-3">
-            <button 
-              onClick={() => setActiveModal('newBooking')}
-              className="w-full py-3 px-4 bg-linear-to-r from-orange-500 to-orange-600 text-white rounded-lg font-medium hover:shadow-md transition-all flex items-center justify-center gap-2"
-            >
-              <Plus size={18} />
-              New Booking
+          <div className="flex items-center gap-4">
+            <button className="p-2 hover:bg-gray-50 rounded-lg transition-colors">
+              <Bell size={20} className="text-gray-600" />
             </button>
-            <button 
-              onClick={() => setActiveModal('checkIn')}
-              className="w-full py-3 px-4 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
-            >
-              <LogIn size={18} />
-              Check-in Guest
-            </button>
-            <button 
-              onClick={() => setActiveModal('checkOut')}
-              className="w-full py-3 px-4 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
-            >
-              <LogOut size={18} />
-              Check-out Guest
-            </button>
-            <button 
-              onClick={() => setActiveModal('addGuest')}
-              className="w-full py-3 px-4 bg-white border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
-            >
-              <UserPlus size={18} />
-              Add Guest
+            <button className="p-2 hover:bg-gray-50 rounded-lg transition-colors">
+              <Settings size={20} className="text-gray-600" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Recent Bookings */}
-        <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl">
-          <div className="flex justify-between items-center p-5 border-b border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Bookings</h3>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        {/* Title and Date */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Dashboard</h1>
+          <p className="text-gray-500 text-sm">
+            {currentTime.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <StatCard
+            title="New Booking"
+            value="872"
+            icon={BarChart3}
+            bgColor="bg-blue-100"
+            textColor="text-blue-600"
+            badge={{ label: '+2.5%', bgColor: 'bg-blue-50', textColor: 'text-blue-600', icon: TrendingUp }}
+          />
+          <StatCard
+            title="Booked"
+            value="480"
+            icon={Users}
+            bgColor="bg-purple-100"
+            textColor="text-purple-600"
+            badge={{ label: '+1.8%', bgColor: 'bg-purple-50', textColor: 'text-purple-600', icon: TrendingUp }}
+          />
+          <StatCard
+            title="Check in"
+            value="97"
+            icon={LogOut}
+            bgColor="bg-green-100"
+            textColor="text-green-600"
+            badge={{ label: '+0.4%', bgColor: 'bg-green-50', textColor: 'text-green-600', icon: TrendingUp }}
+          />
+          <StatCard
+            title="Check out"
+            value="40"
+            icon={Clock}
+            bgColor="bg-orange-100"
+            textColor="text-orange-600"
+            badge={{ label: '-0.2%', bgColor: 'bg-orange-50', textColor: 'text-orange-600' }}
+          />
+        </div>
+
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Available Rooms */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Available rooms</h3>
+              <div className="flex items-end gap-6">
+                <div className="flex-1">
+                  <p className="text-4xl font-bold text-gray-900 mb-1">872</p>
+                  <p className="text-sm text-gray-500">Total 2000 rooms</p>
+                </div>
+                <div className="h-24 w-32 bg-gradient-to-t from-blue-500 to-blue-300 rounded-lg flex items-end justify-center pb-2">
+                  <div className="text-white font-bold">📊</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Room Status and Sold Out */}
+            <div className="grid grid-cols-2 gap-6">
+              {/* Occupancy Statistics */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Occupancy Statistics</h3>
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-600 flex justify-between">
+                    <span>100%</span>
+                    <span>0%</span>
+                  </p>
+                  <div className="h-32 flex items-end gap-2">
+                    {['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'].map((month, i) => {
+                      const heights = [60, 70, 50, 80, 65, 75, 70, 85, 55, 65, 70];
+                      const colors = [
+                        'bg-blue-500', 'bg-purple-500', 'bg-green-500', 'bg-purple-500',
+                        'bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-green-500',
+                        'bg-blue-500', 'bg-purple-500', 'bg-orange-500'
+                      ];
+                      return (
+                        <div key={i} className="flex-1 flex flex-col items-center">
+                          <div className={`${colors[i]} rounded-t-lg flex-1 w-full`} style={{ height: `${heights[i]}px` }} />
+                          <p className="text-xs text-gray-500 mt-1">{month}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Sold Out */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Sold out rooms for today</h3>
+                <div className="flex items-end gap-6">
+                  <div className="flex-1">
+                    <p className="text-4xl font-bold text-gray-900 mb-1">590</p>
+                    <p className="text-sm text-gray-500">Total 5000 rooms</p>
+                  </div>
+                  <div className="h-24 w-32 bg-gradient-to-t from-orange-500 to-orange-300 rounded-lg flex items-end justify-center pb-2">
+                    <div className="text-white font-bold">📊</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Room Status Bottom */}
+            <div className="grid grid-cols-2 gap-6">
+              {/* Room status table */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Room status</h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Occupied rooms</span>
+                    <span className="font-semibold text-gray-900">590</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Clean</span>
+                    <span className="font-semibold text-gray-900">219</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Dirty</span>
+                    <span className="font-semibold text-gray-900">371</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Inspected</span>
+                    <span className="font-semibold text-gray-900">60</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Another table */}
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Available rooms</span>
+                    <span className="font-semibold text-gray-900">20</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Clean</span>
+                    <span className="font-semibold text-gray-900">15</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Dirty</span>
+                    <span className="font-semibold text-gray-900">19</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Inspected</span>
+                    <span className="font-semibold text-gray-900">8</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            {/* Calendar */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-900">Agostus 2020</h3>
+                  <div className="flex gap-1">
+                    <button onClick={prevMonth} className="p-1 hover:bg-gray-100 rounded">
+                      <ChevronLeft size={18} className="text-gray-600" />
+                    </button>
+                    <button onClick={nextMonth} className="p-1 hover:bg-gray-100 rounded">
+                      <ChevronRight size={18} className="text-gray-600" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Weekday headers */}
+                <div className="grid grid-cols-7 gap-2 mb-2">
+                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) => (
+                    <div key={day} className="text-center text-xs font-semibold text-gray-500 py-1">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Calendar days */}
+                <div className="grid grid-cols-7 gap-2">
+                  {calendarDays.map((day, idx) => (
+                    <div
+                      key={idx}
+                      className={`aspect-square flex items-center justify-center rounded text-xs font-medium cursor-pointer transition-colors ${
+                        day === null
+                          ? ''
+                          : day === 14
+                          ? 'bg-blue-500 text-white'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {day}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Client Reviews */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="font-semibold text-gray-900 mb-4">Client Reviews</h3>
+              <div className="space-y-4">
+                <ReviewCard
+                  name="Jason Gladys"
+                  rating={5}
+                  text="The best hotel ever! I spent a year and they are reliable and safe off. staff are happy."
+                />
+                <ReviewCard
+                  name="Jason Gladys"
+                  rating={4}
+                  text="Are mostly +1 the best hotel maker I have spent time. The best hotel to have done this week."
+                />
+                <ReviewCard
+                  name="Jason Gladys"
+                  rating={5}
+                  text="Are mostly +1 the best hotel maker I have spent time. The best hotel to have done this week."
                 />
               </div>
-              <button 
-                onClick={() => setActiveModal('newBooking')}
-                className="text-sm bg-orange-500 text-white px-3 py-1.5 rounded-lg hover:bg-orange-600 font-medium flex items-center gap-1"
-              >
-                <Plus size={14} />
-                Add
-              </button>
             </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left text-xs font-medium text-gray-500 uppercase px-5 py-3">Guest</th>
-                  <th className="text-left text-xs font-medium text-gray-500 uppercase px-5 py-3">Room</th>
-                  <th className="text-left text-xs font-medium text-gray-500 uppercase px-5 py-3">Check-in</th>
-                  <th className="text-left text-xs font-medium text-gray-500 uppercase px-5 py-3">Status</th>
-                  <th className="text-right text-xs font-medium text-gray-500 uppercase px-5 py-3">Amount</th>
-                  <th className="text-center text-xs font-medium text-gray-500 uppercase px-5 py-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {recentBookingsList
-                  .filter(b => b.guestName.toLowerCase().includes(searchQuery.toLowerCase()) || b.id.toLowerCase().includes(searchQuery.toLowerCase()))
-                  .slice(0, 5)
-                  .map((booking) => (
-                  <tr key={booking.id} className="hover:bg-gray-50">
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-linear-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
-                          {booking.guestName.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900 text-sm">{booking.guestName}</p>
-                          <p className="text-xs text-gray-400">{booking.id}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className="text-sm text-gray-900 font-medium">
-                        {typeof booking.room === 'string' ? booking.room : booking.room.name}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className="text-sm text-gray-600">{new Date(booking.checkIn).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${getStatusColor(booking.status)}`}>
-                        {booking.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-right">
-                      <span className="text-sm font-semibold text-gray-900">{booking.amount}</span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center justify-center gap-1">
-                        <button 
-                          onClick={() => { setSelectedBooking(booking); setActiveModal('viewBooking'); }}
-                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="View"
-                        >
-                          <Eye size={16} />
-                        </button>
-                        <button 
-                          onClick={() => { setSelectedBooking(booking); setActiveModal('editBooking'); }}
-                          className="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteBooking(booking.id)}
-                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
 
-        {/* Today's Activity */}
-        <div className="space-y-5">
-          {/* Check-ins */}
-          <div className="bg-white border border-gray-200 rounded-xl">
-            <div className="flex justify-between items-center p-4 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <CalendarCheck size={18} className="text-green-500" />
-                <h3 className="font-semibold text-gray-900">Today's Check-ins</h3>
-              </div>
-              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                {todayCheckIns.length} guests
-              </span>
-            </div>
-            <div className="divide-y divide-gray-50">
-              {todayCheckIns.map((item, idx) => (
-                <div key={idx} className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                      <span className="text-green-700 font-medium text-sm">{item.guestName.charAt(0)}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{item.guestName}</p>
-                      <p className="text-xs text-gray-400">Room {typeof item.room === 'string' ? item.room : item.room.name}</p>
-                    </div>
+            {/* Room Status Donut */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="font-semibold text-gray-900 mb-4">Room Status</h3>
+              <div className="flex flex-col items-center">
+                <div className="relative w-24 h-24 mb-4">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      fill="none"
+                      stroke="#e5e7eb"
+                      strokeWidth="8"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      fill="none"
+                      stroke="#3b82f6"
+                      strokeWidth="8"
+                      strokeDasharray="200.53 251"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-lg font-bold text-gray-900">80%</span>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${getStatusColor(item.status)}`}>
-                    {item.status}
-                  </span>
                 </div>
-              ))}
-              {todayCheckIns.length === 0 && <p className="p-4 text-sm text-gray-500 text-center">No check-ins today</p>}
-            </div>
-          </div>
-
-          {/* Check-outs */}
-          <div className="bg-white border border-gray-200 rounded-xl">
-            <div className="flex justify-between items-center p-4 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <CalendarX size={18} className="text-orange-500" />
-                <h3 className="font-semibold text-gray-900">Today's Check-outs</h3>
-              </div>
-              <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-medium">
-                {todayCheckOuts.length} guests
-              </span>
-            </div>
-            <div className="divide-y divide-gray-50">
-              {todayCheckOuts.map((item, idx) => (
-                <div key={idx} className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                      <span className="text-orange-700 font-medium text-sm">{item.guestName.charAt(0)}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{item.guestName}</p>
-                      <p className="text-xs text-gray-400">Room {typeof item.room === 'string' ? item.room : item.room.name}</p>
-                    </div>
+                <div className="space-y-2 text-sm w-full">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded" />
+                    <span className="text-gray-600">Cleaned</span>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${getStatusColor(item.status)}`}>
-                    {item.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-gray-300 rounded" />
+                    <span className="text-gray-600">Pending</span>
+                  </div>
                 </div>
-              ))}
-              {todayCheckOuts.length === 0 && <p className="p-4 text-sm text-gray-500 text-center">No check-outs today</p>}
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Modal Overlay */}
-      {activeModal !== 'none' && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            
-            {/* New Booking Modal */}
-            {activeModal === 'newBooking' && (
-              <>
-                <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                  <h3 className="text-lg font-semibold text-gray-900">Create New Booking</h3>
-                  <button onClick={() => setActiveModal('none')} className="p-2 hover:bg-gray-100 rounded-lg">
-                    <X size={20} className="text-gray-500" />
-                  </button>
-                </div>
-                <div className="p-5 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Guest Name *</label>
-                    <input
-                      type="text"
-                      value={newBookingForm.guestName}
-                      onChange={(e) => setNewBookingForm({ ...newBookingForm, guestName: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                      placeholder="Enter guest name"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                      <input
-                        type="tel"
-                        value={newBookingForm.phone}
-                        onChange={(e) => setNewBookingForm({ ...newBookingForm, phone: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                        placeholder="+91 98765 43210"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                      <input
-                        type="email"
-                        value={newBookingForm.email}
-                        onChange={(e) => setNewBookingForm({ ...newBookingForm, email: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                        placeholder="guest@email.com"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Room *</label>
-                    <select
-                      value={newBookingForm.room}
-                      onChange={(e) => setNewBookingForm({ ...newBookingForm, room: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                    >
-                      <option value="">Select a room</option>
-                      {availableRooms.map(room => (
-                        <option key={room} value={room}>Room {room}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Check-in Date *</label>
-                      <input
-                        type="date"
-                        value={newBookingForm.checkIn}
-                        onChange={(e) => setNewBookingForm({ ...newBookingForm, checkIn: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Check-out Date *</label>
-                      <input
-                        type="date"
-                        value={newBookingForm.checkOut}
-                        onChange={(e) => setNewBookingForm({ ...newBookingForm, checkOut: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
-                    <input
-                      type="number"
-                      value={newBookingForm.amount}
-                      onChange={(e) => setNewBookingForm({ ...newBookingForm, amount: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-3 p-5 border-t border-gray-100">
-                  <button
-                    onClick={() => setActiveModal('none')}
-                    className="flex-1 py-2.5 px-4 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleCreateBooking}
-                    className="flex-1 py-2.5 px-4 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600"
-                  >
-                    Create Booking
-                  </button>
-                </div>
-              </>
-            )}
-
-            {/* View Booking Modal */}
-            {activeModal === 'viewBooking' && selectedBooking && (
-              <>
-                <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                  <h3 className="text-lg font-semibold text-gray-900">Booking Details</h3>
-                  <button onClick={() => { setActiveModal('none'); setSelectedBooking(null); }} className="p-2 hover:bg-gray-100 rounded-lg">
-                    <X size={20} className="text-gray-500" />
-                  </button>
-                </div>
-                <div className="p-5 space-y-4">
-                  <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
-                    <div className="w-14 h-14 bg-linear-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                      {selectedBooking.guestName.charAt(0)}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900">{selectedBooking.guestName}</h4>
-                      <p className="text-sm text-gray-500">{selectedBooking.id}</p>
-                    </div>
-                    <span className={`ml-auto text-xs px-3 py-1 rounded-full font-medium capitalize ${getStatusColor(selectedBooking.status)}`}>
-                      {selectedBooking.status}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Room</p>
-                      <p className="font-semibold text-gray-900">{typeof selectedBooking.room === 'string' ? selectedBooking.room : selectedBooking.room.name}</p>
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Amount</p>
-                      <p className="font-semibold text-gray-900">{selectedBooking.amount}</p>
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Check-in</p>
-                      <p className="font-semibold text-gray-900">{new Date(selectedBooking.checkIn).toLocaleDateString()}</p>
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Check-out</p>
-                      <p className="font-semibold text-gray-900">{new Date(selectedBooking.checkOut).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-3 p-5 border-t border-gray-100">
-                  {selectedBooking.status === 'pending' && (
-                    <button
-                      onClick={() => { handleConfirmBooking(selectedBooking.id); setActiveModal('none'); setSelectedBooking(null); }}
-                      className="flex-1 py-2.5 px-4 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600"
-                    >
-                      Confirm Booking
-                    </button>
-                  )}
-                  {selectedBooking.status !== 'cancelled' && (
-                    <button
-                      onClick={() => { handleCancelBooking(selectedBooking.id); setActiveModal('none'); setSelectedBooking(null); }}
-                      className="flex-1 py-2.5 px-4 border border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50"
-                    >
-                      Cancel Booking
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setActiveModal('editBooking')}
-                    className="flex-1 py-2.5 px-4 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600"
-                  >
-                    Edit
-                  </button>
-                </div>
-              </>
-            )}
-
-            {/* Edit Booking Modal */}
-            {activeModal === 'editBooking' && selectedBooking && (
-              <>
-                <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                  <h3 className="text-lg font-semibold text-gray-900">Edit Booking</h3>
-                  <button onClick={() => { setActiveModal('none'); setSelectedBooking(null); }} className="p-2 hover:bg-gray-100 rounded-lg">
-                    <X size={20} className="text-gray-500" />
-                  </button>
-                </div>
-                <div className="p-5 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Guest Name</label>
-                    <input
-                      type="text"
-                      value={selectedBooking.guestName}
-                      onChange={(e) => setSelectedBooking({ ...selectedBooking, guestName: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Room</label>
-                    <select
-                      value={typeof selectedBooking.room === 'string' ? selectedBooking.roomId : selectedBooking.room.id}
-                      onChange={(e) => setSelectedBooking({ ...selectedBooking, room: `Room ${e.target.value}`, roomId: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                    >
-                      {availableRooms.map(room => (
-                        <option key={room} value={room}>Room {room}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Check-in Date</label>
-                      <input
-                        type="date"
-                        value={selectedBooking.checkIn}
-                        onChange={(e) => setSelectedBooking({ ...selectedBooking, checkIn: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Check-out Date</label>
-                      <input
-                        type="date"
-                        value={selectedBooking.checkOut}
-                        onChange={(e) => setSelectedBooking({ ...selectedBooking, checkOut: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
-                      <input
-                        type="text"
-                        value={selectedBooking.amount}
-                        onChange={(e) => setSelectedBooking({ ...selectedBooking, amount: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                      <select
-                        value={selectedBooking.status}
-                        onChange={(e) => setSelectedBooking({ ...selectedBooking, status: e.target.value as Booking['status'] })}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="confirmed">Confirmed</option>
-                        <option value="cancelled">Cancelled</option>
-                        <option value="checked-in">Checked In</option>
-                        <option value="checked-out">Checked Out</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-3 p-5 border-t border-gray-100">
-                  <button
-                    onClick={() => { setActiveModal('none'); setSelectedBooking(null); }}
-                    className="flex-1 py-2.5 px-4 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleUpdateBooking}
-                    className="flex-1 py-2.5 px-4 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </>
-            )}
-
-            {/* Check-in Modal */}
-            {activeModal === 'checkIn' && (
-              <>
-                <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                  <h3 className="text-lg font-semibold text-gray-900">Guest Check-in</h3>
-                  <button onClick={() => setActiveModal('none')} className="p-2 hover:bg-gray-100 rounded-lg">
-                    <X size={20} className="text-gray-500" />
-                  </button>
-                </div>
-                <div className="p-5">
-                  <p className="text-sm text-gray-500 mb-4">Select a booking to check-in the guest:</p>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {confirmedBookings.length === 0 ? (
-                      <p className="text-center text-gray-400 py-8">No confirmed bookings available for check-in</p>
-                    ) : (
-                      confirmedBookings.map(booking => (
-                        <div
-                          key={booking.id}
-                          className="p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 cursor-pointer transition-colors"
-                          onClick={() => handleCheckIn(booking.id)}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                <span className="text-green-700 font-medium">{booking.guestName.charAt(0)}</span>
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-900">{booking.guestName}</p>
-                                <p className="text-xs text-gray-500">Room {typeof booking.room === 'string' ? booking.room : booking.room.name}</p>
-                              </div>
-                            </div>
-                            <span className="text-sm font-semibold text-gray-900">{booking.checkIn}</span>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Check-out Modal */}
-            {activeModal === 'checkOut' && (
-              <>
-                <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                  <h3 className="text-lg font-semibold text-gray-900">Guest Check-out</h3>
-                  <button onClick={() => setActiveModal('none')} className="p-2 hover:bg-gray-100 rounded-lg">
-                    <X size={20} className="text-gray-500" />
-                  </button>
-                </div>
-                <div className="p-5">
-                  <p className="text-sm text-gray-500 mb-4">Select a booking to check-out the guest:</p>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {checkedInBookings.length === 0 ? (
-                      <p className="text-center text-gray-400 py-8">No guests currently checked in</p>
-                    ) : (
-                      checkedInBookings.map(booking => (
-                        <div
-                          key={booking.id}
-                          className="p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 cursor-pointer transition-colors"
-                          onClick={() => handleCheckOut(booking.id)}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                <span className="text-blue-700 font-medium">{booking.guestName.charAt(0)}</span>
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-900">{booking.guestName}</p>
-                                <p className="text-xs text-gray-500">Room {typeof booking.room === 'string' ? booking.room : booking.room.name}</p>
-                              </div>
-                            </div>
-                            <span className="text-sm font-semibold text-gray-900">{booking.checkOut}</span>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Add Guest Modal */}
-            {activeModal === 'addGuest' && (
-              <>
-                <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                  <h3 className="text-lg font-semibold text-gray-900">Add New Guest</h3>
-                  <button onClick={() => setActiveModal('none')} className="p-2 hover:bg-gray-100 rounded-lg">
-                    <X size={20} className="text-gray-500" />
-                  </button>
-                </div>
-                <div className="p-5 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                    <input
-                      type="text"
-                      value={newGuestForm.name}
-                      onChange={(e) => setNewGuestForm({ ...newGuestForm, name: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                      placeholder="Enter guest name"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
-                      <input
-                        type="tel"
-                        value={newGuestForm.phone}
-                        onChange={(e) => setNewGuestForm({ ...newGuestForm, phone: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                        placeholder="+91 98765 43210"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                      <input
-                        type="email"
-                        value={newGuestForm.email}
-                        onChange={(e) => setNewGuestForm({ ...newGuestForm, email: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                        placeholder="guest@email.com"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">ID Type</label>
-                      <select
-                        value={newGuestForm.idType}
-                        onChange={(e) => setNewGuestForm({ ...newGuestForm, idType: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                      >
-                        <option value="Aadhar">Aadhar Card</option>
-                        <option value="Passport">Passport</option>
-                        <option value="Driving License">Driving License</option>
-                        <option value="Voter ID">Voter ID</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">ID Number</label>
-                      <input
-                        type="text"
-                        value={newGuestForm.idNumber}
-                        onChange={(e) => setNewGuestForm({ ...newGuestForm, idNumber: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                        placeholder="XXXX XXXX XXXX"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                    <textarea
-                      value={newGuestForm.address}
-                      onChange={(e) => setNewGuestForm({ ...newGuestForm, address: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                      rows={3}
-                      placeholder="Enter full address"
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-3 p-5 border-t border-gray-100">
-                  <button
-                    onClick={() => setActiveModal('none')}
-                    className="flex-1 py-2.5 px-4 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleAddGuest}
-                    className="flex-1 py-2.5 px-4 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600"
-                  >
-                    Add Guest
-                  </button>
-                </div>
-              </>
-            )}
-
-          </div>
-        </div>
-      )}
     </div>
   );
 };

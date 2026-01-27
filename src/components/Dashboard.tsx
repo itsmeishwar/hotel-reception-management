@@ -395,10 +395,10 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-          </div>
-      </>
+
+          </>
         ) : null}
-    </div>
+      </div>
     </div >
   );
 };

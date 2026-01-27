@@ -12,6 +12,7 @@ import {
   FileBarChart,
   Settings,
   Table
+  ,CalendarCheck, Headphones, Broom, ShoppingCart, Box, TrendingUp, LifeBuoy, LogOut
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -23,18 +24,22 @@ const Sidebar = () => {
 
   const menuItems = [
     { path: "/", icon: LayoutDashboard, label: "Dashboard" },
-    { path: "/bookings", icon: CalendarDays, label: "Bookings" },
-    { path: "/rooms", icon: Hotel, label: "Rooms" },
-    { path: "/payments", icon: Receipt, label: "Payments" },
+    { path: "/front-desk", icon: Headphones, label: "Front Desk" },
+    { path: "/reservations", icon: CalendarCheck, label: "Reservations" },
     { path: "/guests", icon: Users, label: "Guests" },
-    { path: "/cafe", icon: Coffee, label: "Cafe & Orders" },
-    { path: "/food-menu", icon: UtensilsCrossed, label: "Food Menu" },
-    { path: "/tables", icon: Table, label: "Tables" },
-    { path: "/billing", icon: Receipt, label: "Billing" },
-    { path: "/staff", icon: UserCog, label: "Staff" },
-    { path: "/roles", icon: ShieldCheck, label: "Roles & Access" },
+    { path: "/payments", icon: Receipt, label: "Payments" },
     { path: "/reports", icon: FileBarChart, label: "Reports" },
+    { path: "/staff", icon: UserCog, label: "Staffs" },
+    { path: "/housekeeping", icon: Broom, label: "Housekeeping" },
+    { path: "/orders", icon: ShoppingCart, label: "Orders" },
+    { path: "/bookings", icon: CalendarDays, label: "Bookings" },
+    { path: "/revenue", icon: TrendingUp, label: "Revenue" },
+    { path: "/inventory", icon: Box, label: "Inventory" },
+    { path: "/support", icon: LifeBuoy, label: "Support & Training" },
+    { path: "/manage-role", icon: ShieldCheck, label: "Manage Role" },
+    { path: "/roles", icon: ShieldCheck, label: "Roles & Access" },
     { path: "/settings", icon: Settings, label: "Settings" },
+    { path: "/logout", icon: LogOut, label: "Logout" },
   ];
 
   return (

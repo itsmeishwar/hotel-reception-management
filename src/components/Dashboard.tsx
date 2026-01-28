@@ -153,25 +153,25 @@ const Dashboard = () => {
                 title="Booked"
                 value={stats.booked.toString()}
                 icon={Users}
-                bgColor="bg-purple-100"
-                textColor="text-purple-600"
-                badge={{ label: '+1.8%', bgColor: 'bg-purple-50', textColor: 'text-purple-600', icon: TrendingUp }}
+                bgColor="bg-indigo-100"
+                textColor="text-indigo-600"
+                badge={{ label: '+1.8%', bgColor: 'bg-indigo-50', textColor: 'text-indigo-600', icon: TrendingUp }}
               />
               <StatCard
                 title="Check in"
                 value={stats.checkIn.toString()}
                 icon={LogOut}
-                bgColor="bg-green-100"
-                textColor="text-green-600"
-                badge={{ label: '+0.4%', bgColor: 'bg-green-50', textColor: 'text-green-600', icon: TrendingUp }}
+                bgColor="bg-sky-100"
+                textColor="text-sky-600"
+                badge={{ label: '+0.4%', bgColor: 'bg-sky-50', textColor: 'text-sky-600', icon: TrendingUp }}
               />
               <StatCard
                 title="Check out"
                 value={stats.checkOut.toString()}
                 icon={Clock}
-                bgColor="bg-orange-100"
-                textColor="text-orange-600"
-                badge={{ label: '-0.2%', bgColor: 'bg-orange-50', textColor: 'text-orange-600' }}
+                bgColor="bg-cyan-100"
+                textColor="text-cyan-600"
+                badge={{ label: '-0.2%', bgColor: 'bg-cyan-50', textColor: 'text-cyan-600' }}
               />
             </div>
 
@@ -206,9 +206,9 @@ const Dashboard = () => {
                       <div className="h-32 flex items-end gap-2">
                         {occupancyData.map((data, i) => {
                           const colors = [
-                            'bg-blue-500', 'bg-purple-500', 'bg-green-500', 'bg-purple-500',
-                            'bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-green-500',
-                            'bg-blue-500', 'bg-purple-500', 'bg-orange-500'
+                            'bg-blue-500', 'bg-indigo-500', 'bg-sky-500', 'bg-cyan-500',
+                            'bg-blue-400', 'bg-indigo-400', 'bg-sky-400', 'bg-cyan-400',
+                            'bg-blue-600', 'bg-indigo-600', 'bg-sky-600'
                           ];
                           return (
                             <div key={i} className="flex-1 flex flex-col items-center">
@@ -229,7 +229,7 @@ const Dashboard = () => {
                         <p className="text-4xl font-bold text-gray-900 mb-1">590</p>
                         <p className="text-sm text-gray-500">Total 5000 rooms</p>
                       </div>
-                      <div className="h-24 w-32 bg-gradient-to-t from-orange-500 to-orange-300 rounded-lg flex items-end justify-center pb-2">
+                      <div className="h-24 w-32 bg-gradient-to-t from-indigo-500 to-indigo-300 rounded-lg flex items-end justify-center pb-2">
                         <div className="text-white font-bold">📊</div>
                       </div>
                     </div>

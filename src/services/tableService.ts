@@ -3,9 +3,11 @@
 export interface Table {
     id: string;
     tableNumber: string;
+    name?: string;
     capacity: number;
     status: 'available' | 'occupied' | 'reserved' | 'cleaning';
-    location: string;
+    section: string;
+    zone?: string;
     currentOrder?: string;
     reservedBy?: string;
     reservedUntil?: string;
@@ -13,9 +15,10 @@ export interface Table {
 
 export interface TableStats {
     totalTables: number;
-    availableTables: number;
-    occupiedTables: number;
-    reservedTables: number;
+    available: number;
+    occupied: number;
+    reserved: number;
+    totalCapacity: number;
 }
 
 // Mock data
@@ -25,14 +28,14 @@ let tables: Table[] = [
         tableNumber: 'T-1',
         capacity: 2,
         status: 'available',
-        location: 'Main Hall',
+        section: 'Main Hall',
     },
     {
         id: 'T002',
         tableNumber: 'T-2',
         capacity: 4,
         status: 'occupied',
-        location: 'Main Hall',
+        section: 'Main Hall',
         currentOrder: 'ORD-001',
     },
     {
@@ -40,14 +43,14 @@ let tables: Table[] = [
         tableNumber: 'T-3',
         capacity: 4,
         status: 'available',
-        location: 'Main Hall',
+        section: 'Main Hall',
     },
     {
         id: 'T004',
         tableNumber: 'T-4',
         capacity: 6,
         status: 'reserved',
-        location: 'VIP Section',
+        section: 'Main Hall',
         reservedBy: 'John Doe',
         reservedUntil: new Date(Date.now() + 3600000).toISOString(),
     },
@@ -56,7 +59,7 @@ let tables: Table[] = [
         tableNumber: 'T-5',
         capacity: 2,
         status: 'occupied',
-        location: 'Outdoor',
+        section: 'Garden',
         currentOrder: 'ORD-002',
     },
     {
@@ -64,21 +67,21 @@ let tables: Table[] = [
         tableNumber: 'T-6',
         capacity: 8,
         status: 'available',
-        location: 'VIP Section',
+        section: 'Rooftop',
     },
     {
         id: 'T007',
         tableNumber: 'T-7',
         capacity: 4,
         status: 'cleaning',
-        location: 'Main Hall',
+        section: 'Main Hall',
     },
     {
         id: 'T008',
         tableNumber: 'T-8',
         capacity: 2,
         status: 'available',
-        location: 'Outdoor',
+        section: 'Garden',
     },
 ];
 
@@ -92,9 +95,10 @@ export const fetchTableStats = async (): Promise<TableStats> => {
     await new Promise(resolve => setTimeout(resolve, 200));
     return {
         totalTables: tables.length,
-        availableTables: tables.filter(t => t.status === 'available').length,
-        occupiedTables: tables.filter(t => t.status === 'occupied').length,
-        reservedTables: tables.filter(t => t.status === 'reserved').length,
+        available: tables.filter(t => t.status === 'available').length,
+        occupied: tables.filter(t => t.status === 'occupied').length,
+        reserved: tables.filter(t => t.status === 'reserved').length,
+        totalCapacity: tables.reduce((sum, t) => sum + t.capacity, 0),
     };
 };
 

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
+import FrontDesk from './components/FrontDesk';
 import Booking from './components/Booking';
 import Reservations from './components/Reservations';
 import Rooms from './components/Rooms';
@@ -27,6 +28,7 @@ function App() {
           <main className="flex-1 overflow-auto">
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/front-desk" element={<FrontDesk />} />
               <Route path="/reservations" element={<Reservations />} />
               <Route path="/bookings" element={<Booking />} />
               <Route path="/rooms" element={<Rooms />} />

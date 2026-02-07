@@ -2,8 +2,6 @@
 
 A modern, premium web application designed to streamline hotel reception operations. Built with a focus on aesthetics and user experience, this system provides real-time insights into hotel performance, room management, and billing processes.
 
-
-
 ## ✨ Key Features
 
 - **📊 Interactive Dashboard**: 
@@ -57,12 +55,3 @@ Follow these steps to set up the project locally.
    npm run dev
    ```
 
-4. Open your browser and navigate to `http://localhost:5173`
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is licensed under the MIT License.

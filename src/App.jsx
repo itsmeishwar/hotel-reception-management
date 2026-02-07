@@ -13,6 +13,7 @@ import Tables from './components/Tables';
 import Billing from './components/Billing';
 import Payments from './components/Payments';
 import Staff from './components/Staff';
+import Housekeeping from './components/Housekeeping';
 import RolesAccess from './components/RolesAccess';
 import Reports from './components/Reports';
 import Settings from './components/Settings';
@@ -39,6 +40,7 @@ function App() {
               <Route path="/tables" element={<Tables />} />
               <Route path="/billing" element={<Billing />} />
               <Route path="/staff" element={<Staff />} />
+              <Route path="/housekeeping" element={<Housekeeping />} />
               <Route path="/roles" element={<RolesAccess />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/settings" element={<Settings />} />
